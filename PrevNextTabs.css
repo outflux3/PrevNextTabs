@@ -1,0 +1,26 @@
+#content .WireTabs #_ProcessPageEditPrev,
+#content .WireTabs #_ProcessPageEditNext {
+  color: #146ac5;
+  font-weight: 700;
+}
+
+
+#content .WireTabs #_ProcessPageEditPrev:hover,
+#content .WireTabs #_ProcessPageEditNext:hover {
+/*   background: none; */
+  text-decoration: underline;
+/*   border-color: transparent; */
+}
+
+#content .WireTabs #_ProcessPageEditPrev {
+	border-left: 1px solid #ccc;
+	border-top: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+}
+
+#content .WireTabs #_ProcessPageEditNext {
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	border-top: 1px solid #ccc;
+	margin-left: -2px;
+}

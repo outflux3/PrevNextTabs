@@ -1,0 +1,149 @@
+<?php
+
+/**
+ * ProcessWire PrevNextTabs
+ *
+ * Add Previous and Next Page Links
+ *
+ * Portions of this module based on Page References Tab written by Niklas Lakanen
+ *
+ */
+
+class PrevNextTabs extends WireData implements Module, ConfigurableModule {
+
+	/**
+	 * @var Page Page being edited
+	 *
+	 */
+	private $editedPage;
+
+	/**
+	 * Return information about this module (required)
+	 *
+	 * @return array
+	 *
+	 */
+	static public function getModuleInfo() {
+		return array(
+			'title'    => 'Prev/Next Tabs',
+			'summary'  => 'Adds prev/next links (tabs) to page editor.',
+			'version'  => 001,
+			'author'   => 'Macrura',
+			'autoload' => true
+		);
+	}
+
+	/**
+	 * __construct() is the right place to init config vars before they'll get populated
+	 *
+	 */
+	public function __construct() {
+		$this->enabledTemplates = array();
+	}
+
+	/**
+	 * init() is called when PW's API is ready
+	 *
+	 */
+	public function init() {
+		$this->config->styles->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".css?v=" . time());
+		$this->config->scripts->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".js?v=" . time());
+	}
+
+	/**
+	 * ready() is called when both PW's API is ready and $page object is initialized (for autoload modules!)
+	 * Add the hook here to be able to skip it based on the template of the edited page.
+	 *
+	 */
+	public function ready() {
+		// we're interested in page editor only
+		if(wire('page')->process != 'ProcessPageEdit') return;
+
+		// skip changing templates (only target the actual edit form)
+		$id = (int)$this->input->get('id');
+		if(!$id) return;
+
+		// wire('page') would be the page with ProcessPageEdit
+		// GET parameter id tells the page that's being edited
+		$this->editedPage = wire('pages')->get($id);
+
+		// don't even consider system templates
+		if($this->editedPage->template->flags & Template::flagSystem) return;
+
+		// hook only if
+		// 1) no templates have been chosen (=all enabled) OR
+		// 2) the template of the edited page has been chosen
+		if(count($this->enabledTemplates) == 0 or
+		   in_array($this->editedPage->template->name, $this->enabledTemplates)) {
+			//$this->addHookAfter('ProcessPageEdit::buildForm', $this, 'hookAddPrevNext');
+			$this->addHookAfter('ProcessPageEdit::getTabs', $this, 'hookAddPrevNext');
+		}
+	}
+
+
+	public function hookAddPrevNext(HookEvent $event) {
+
+		if(!count($this->editedPage->siblings)) return;
+
+		$tabs = $event->return;
+		$event->replace = true;
+
+		$siblings = $this->editedPage->siblings;
+		$prev = $siblings->getPrev($this->editedPage);
+
+		if ($prev) {
+			$label = $this->_('Prev');
+			$id = $this->className() . 'Prev';
+			$url = $prev->editUrl;
+			$title = wire('sanitizer')->entities($prev->title);
+			$a = "<a id='_ProcessPageEditPrev' href='$url' title='$title'><i class='fa fa-angle-double-left'></i> $label</a>";
+			$tabs[$id] = $a;
+		}
+
+		$next = $siblings->getNext($this->editedPage);
+
+		if ($next) {
+			$label = $this->_('Next');
+			$id = $this->className() . 'Next';
+			$url = $next->editUrl;
+			$title = wire('sanitizer')->entities($next->title);
+			$a = "<a id='_ProcessPageEditNext' href='$url' title='$title'>$label <i class='fa fa-angle-double-right'></i></a>";
+			$tabs[$id] = $a;
+		}
+
+		//wire('log')->save('module-testing', print_r($tabs, TRUE));
+
+		$event->return = $tabs;
+
+	}
+
+
+	/**
+	 * Return an InputfieldsWrapper of Inputfields used to configure the class
+	 *
+	 * @param array $data Array of config values indexed by field name
+	 * @return InputfieldsWrapper
+	 *
+	 */
+	public static function getModuleConfigInputfields(array $data) {
+		$wrapper = new InputfieldWrapper();
+
+		$fieldEnabledTemplates = wire('modules')->get('InputfieldAsmSelect');
+		$fieldEnabledTemplates->attr('name+id', 'enabledTemplates');
+		$fieldEnabledTemplates->label = __('Enabled templates', __FILE__);
+		$fieldEnabledTemplates->description = __('"Prev/Next" tabs will only be shown for chosen templates. If no template is chosen, Prev/Next tabs will be shown for all templates.', __FILE__);
+		$fieldEnabledTemplates->attr('title', __('Enable template', __FILE__));
+		$fieldEnabledTemplates->setAsmSelectOption('sortable', false);
+
+		// populate with all available templates
+		foreach(wire('templates') as $t) {
+			// filter out system templates
+			if(!($t->flags & Template::flagSystem)) $fieldEnabledTemplates->addOption($t->name);
+		}
+		if(isset($data['enabledTemplates'])) $fieldEnabledTemplates->value = $data['enabledTemplates'];
+
+		$wrapper->add($fieldEnabledTemplates);
+
+		return $wrapper;
+	}
+}
