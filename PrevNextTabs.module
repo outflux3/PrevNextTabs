@@ -46,8 +46,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	 *
 	 */
 	public function init() {
-		$this->config->styles->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".css?v=" . time());
-		$this->config->scripts->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".js?v=" . time());
+
 	}
 
 	/**
@@ -84,6 +83,10 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	public function hookAddPrevNext(HookEvent $event) {
 
 		if(!count($this->editedPage->siblings)) return;
+
+		// add styles & init tooltip only if the links are to show
+		$this->config->styles->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".css?v=" . time());
+		$this->config->scripts->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".js?v=" . time());
 
 		$tabs = $event->return;
 		$event->replace = true;
