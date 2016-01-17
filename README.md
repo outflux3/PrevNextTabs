@@ -22,4 +22,4 @@ If you are using PW version 2.6.1 or later, the system will prevent you from lea
 For earlier versions, to avoid accidentally losing changes made to a page that might occur if a user accidentally clicks on one of these, make sure to have the Form Save Reminder module installed.
 
 
-![Desc](https://raw.githubusercontent.com/outflux3/PrevNextTabs/master/images/screen.png)
+![Desc](https://raw.githubusercontent.com/outflux3/PrevNextTabs/master/screen.png)
