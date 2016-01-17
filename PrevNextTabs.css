@@ -4,12 +4,14 @@
   font-weight: 700;
 }
 
-
 #content .WireTabs #_ProcessPageEditPrev:hover,
 #content .WireTabs #_ProcessPageEditNext:hover {
-/*   background: none; */
-  text-decoration: underline;
-/*   border-color: transparent; */
+  color: #fff;
+}
+
+.AdminThemeReno #content .WireTabs #_ProcessPageEditPrev:hover,
+.AdminThemeReno #content .WireTabs #_ProcessPageEditNext:hover {
+  color: #E95372;
 }
 
 #content .WireTabs #_ProcessPageEditPrev {
