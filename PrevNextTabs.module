@@ -91,7 +91,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		$tabs = $event->return;
 		$event->replace = true;
 
-		$siblings = $this->editedPage->siblings;
+		$siblings = $this->editedPage->siblings("include=all");
 		$prev = $siblings->getPrev($this->editedPage);
 
 		if ($prev) {
