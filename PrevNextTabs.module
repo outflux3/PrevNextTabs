@@ -74,7 +74,6 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		// 2) the template of the edited page has been chosen
 		if(count($this->enabledTemplates) == 0 or
 		   in_array($this->editedPage->template->name, $this->enabledTemplates)) {
-			//$this->addHookAfter('ProcessPageEdit::buildForm', $this, 'hookAddPrevNext');
 			$this->addHookAfter('ProcessPageEdit::getTabs', $this, 'hookAddPrevNext');
 		}
 	}
@@ -113,8 +112,6 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 			$a = "<a id='_ProcessPageEditNext' href='$url' title='$title'>$label <i class='fa fa-angle-double-right'></i></a>";
 			$tabs[$id] = $a;
 		}
-
-		//wire('log')->save('module-testing', print_r($tabs, TRUE));
 
 		$event->return = $tabs;
 
