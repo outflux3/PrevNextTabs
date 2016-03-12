@@ -27,7 +27,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		return array(
 			'title'    => 'Prev/Next Tabs',
 			'summary'  => 'Adds prev/next links (tabs) to page editor.',
-			'version'  => 003,
+			'version'  => 004,
 			'author'   => 'Macrura',
 			'autoload' => true
 		);
@@ -81,7 +81,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 
 	public function hookAddPrevNext(HookEvent $event) {
 
-		if(!count($this->editedPage->siblings)) return;
+		if(!count($this->editedPage->siblings("include=all"))) return;
 
 		// add styles & init tooltip only if the links are to show
 		$this->config->styles->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".css?v=" . time());
