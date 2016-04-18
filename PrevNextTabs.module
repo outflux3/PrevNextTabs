@@ -91,6 +91,18 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		$event->replace = true;
 
 		$siblings = $this->editedPage->siblings("include=all");
+		
+		$next = $siblings->getNext($this->editedPage);
+
+		if ($next) {
+			$label = $this->_('Next');
+			$id = $this->className() . 'Next';
+			$url = $next->editUrl;
+			$title = wire('sanitizer')->entities($next->title);
+			$a = "<a id='_ProcessPageEditNext' href='$url' title='$title'>$label <i class='fa fa-angle-double-right'></i></a>";
+			$tabs[$id] = $a;
+		}
+
 		$prev = $siblings->getPrev($this->editedPage);
 
 		if ($prev) {
@@ -102,16 +114,6 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 			$tabs[$id] = $a;
 		}
 
-		$next = $siblings->getNext($this->editedPage);
-
-		if ($next) {
-			$label = $this->_('Next');
-			$id = $this->className() . 'Next';
-			$url = $next->editUrl;
-			$title = wire('sanitizer')->entities($next->title);
-			$a = "<a id='_ProcessPageEditNext' href='$url' title='$title'>$label <i class='fa fa-angle-double-right'></i></a>";
-			$tabs[$id] = $a;
-		}
 
 		$event->return = $tabs;
 
