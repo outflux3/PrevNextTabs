@@ -81,7 +81,11 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 
 	public function hookAddPrevNext(HookEvent $event) {
 
-		if(!count($this->editedPage->siblings("include=all"))) return;
+		$query = 'include=all, parent='.$this->editedPage->parent;
+		$next = $this->editedPage->next($query);
+		$prev = $this->editedPage->prev($query);
+
+		if (!$next->id && !$prev->id) return;
 
 		// add styles & init tooltip only if the links are to show
 		$this->config->styles->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".css?v=" . time());
@@ -90,11 +94,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		$tabs = $event->return;
 		$event->replace = true;
 
-		$siblings = $this->editedPage->siblings("include=all");
-		
-		$next = $siblings->getNext($this->editedPage);
-
-		if ($next) {
+		if ($next->id) {
 			$label = $this->_('Next');
 			$id = $this->className() . 'Next';
 			$url = $next->editUrl;
@@ -103,9 +103,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 			$tabs[$id] = $a;
 		}
 
-		$prev = $siblings->getPrev($this->editedPage);
-
-		if ($prev) {
+		if ($prev->id) {
 			$label = $this->_('Prev');
 			$id = $this->className() . 'Prev';
 			$url = $prev->editUrl;
