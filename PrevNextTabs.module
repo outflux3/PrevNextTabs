@@ -81,8 +81,9 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 
 	public function hookAddPrevNext(HookEvent $event) {
 
-		$next = $this->editedPage->next('include=all');
-		$prev = $this->editedPage->prev('include=all');
+		$query = 'include=all, parent='.$this->editedPage->parent;
+		$next = $this->editedPage->next($query);
+		$prev = $this->editedPage->prev($query);
 
 		if (!$next->id && !$prev->id) return;
 
