@@ -27,7 +27,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		return array(
 			'title'    => 'Prev/Next Tabs',
 			'summary'  => 'Adds prev/next links (tabs) to page editor.',
-			'version'  => 005,
+			'version'  => 006,
 			'author'   => 'Macrura',
 			'autoload' => true
 		);
