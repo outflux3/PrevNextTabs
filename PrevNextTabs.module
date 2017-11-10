@@ -27,7 +27,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		return array(
 			'title'    => 'Prev/Next Tabs',
 			'summary'  => 'Adds prev/next links (tabs) to page editor.',
-			'version'  => 006,
+			'version'  => 007,
 			'author'   => 'Macrura',
 			'autoload' => true
 		);
@@ -76,6 +76,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		   in_array($this->editedPage->template->name, $this->enabledTemplates)) {
 			$this->addHookAfter('ProcessPageEdit::getTabs', $this, 'hookAddPrevNext');
 		}
+
 	}
 
 
@@ -94,13 +95,15 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		$tabs = $event->return;
 		$event->replace = true;
 
+		$pnTabs = array();
+
 		if ($next->id) {
 			$label = $this->_('Next');
 			$id = $this->className() . 'Next';
 			$url = $next->editUrl;
 			$title = wire('sanitizer')->entities($next->title);
-			$a = "<a id='_ProcessPageEditNext' href='$url' title='$title'>$label <i class='fa fa-angle-double-right'></i></a>";
-			$tabs[$id] = $a;
+			$a = "<a id='_ProcessPageEditNext' target='_top' href='$url' title='$title' data-action='this'>$label <i class='fa fa-angle-double-right'></i></a>";
+			$pnTabs[$id] = $a;
 		}
 
 		if ($prev->id) {
@@ -108,14 +111,20 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 			$id = $this->className() . 'Prev';
 			$url = $prev->editUrl;
 			$title = wire('sanitizer')->entities($prev->title);
-			$a = "<a id='_ProcessPageEditPrev' href='$url' title='$title'><i class='fa fa-angle-double-left'></i> $label</a>";
-			$tabs[$id] = $a;
+			$a = "<a id='_ProcessPageEditPrev' target='_top' href='$url' title='$title' data-action='this'><i class='fa fa-angle-double-left'></i> $label</a>";
+			$pnTabs[$id] = $a;
 		}
 
+		if($this->wire('user')->admin_theme == 'AdminThemeUikit') {
+			$pnTabs = array_reverse($pnTabs);
+		}
+
+		$tabs = array_merge($tabs,$pnTabs);
 
 		$event->return = $tabs;
 
 	}
+
 
 
 	/**

@@ -1,5 +1,10 @@
 #content .WireTabs #_ProcessPageEditPrev,
 #content .WireTabs #_ProcessPageEditNext {
+  float: right
+}
+
+#content .WireTabs #_ProcessPageEditPrev,
+#content .WireTabs #_ProcessPageEditNext {
   color: #146ac5;
   font-weight: 700;
 }
@@ -14,10 +19,18 @@
   color: #E95372;
 }
 
-#content .WireTabs #_ProcessPageEditPrev {
-  float: right
+
+.AdminThemeUikit ul#PageEditTabs li:last-child {
+	position: absolute;
+	right:0;
 }
 
-#content .WireTabs #_ProcessPageEditNext {
-  float: right
+.AdminThemeUikit ul#PageEditTabs li:nth-last-child(2) {
+	position: absolute;
+	right:80px;
+}
+
+.AdminThemeUikit #content .WireTabs #_ProcessPageEditPrev:hover,
+.AdminThemeUikit #content .WireTabs #_ProcessPageEditNext:hover {
+  color: #E91C60 !important;
 }
