@@ -14,20 +14,30 @@
   color: #fff;
 }
 
+
+/**
+ * RENO TWEAKS
+ * ===============================
+ */
+
 .AdminThemeReno #content .WireTabs #_ProcessPageEditPrev:hover,
 .AdminThemeReno #content .WireTabs #_ProcessPageEditNext:hover {
   color: #E95372;
 }
 
+/**
+ * UIKIT TWEAKS
+ * ===============================
+ */
 
-.AdminThemeUikit ul#PageEditTabs li:last-child {
-	position: absolute;
-	right:0;
+.AdminThemeUikit ul#PageEditTabs li.nextLink {
+  position: absolute;
+  right:0;
 }
 
-.AdminThemeUikit ul#PageEditTabs li:nth-last-child(2) {
-	position: absolute;
-	right:80px;
+.AdminThemeUikit ul#PageEditTabs li.prevLink {
+  position: absolute;
+  right:80px;
 }
 
 .AdminThemeUikit #content .WireTabs #_ProcessPageEditPrev:hover,

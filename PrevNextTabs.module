@@ -27,7 +27,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		return array(
 			'title'    => 'Prev/Next Tabs',
 			'summary'  => 'Adds prev/next links (tabs) to page editor.',
-			'version'  => 007,
+			'version'  => 008,
 			'author'   => 'Macrura',
 			'autoload' => true
 		);
@@ -118,6 +118,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		if($this->wire('user')->admin_theme == 'AdminThemeUikit') {
 			$pnTabs = array_reverse($pnTabs);
 		}
+
 
 		$tabs = array_merge($tabs,$pnTabs);
 

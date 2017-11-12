@@ -1,15 +1,20 @@
- $(function() {
-    $("#_ProcessPageEditNext").tooltip();
-    $("#_ProcessPageEditPrev").tooltip();
- });
-
-
 $(document).ready(function() {
-	$('#_ProcessPageEditNext').click(function(e) {
+
+ 	var nextLink = $("#_ProcessPageEditNext"),
+ 		prevLink = $("#_ProcessPageEditPrev");
+
+ 	nextLink.tooltip();
+	prevLink.tooltip();
+
+	nextLink.parent().addClass('nextLink');
+	prevLink.parent().addClass('prevLink');
+
+	nextLink.click(function(e) {
 		e.stopPropagation();
 	});
 
-	$('#_ProcessPageEditPrev').click(function(e) {
+	prevLink.click(function(e) {
 		e.stopPropagation();
 	});
+
 });
