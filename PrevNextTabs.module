@@ -111,14 +111,14 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 			$id = $this->className() . 'Prev';
 			$url = $prev->editUrl;
 			$title = wire('sanitizer')->entities($prev->title);
-			$a = "<a id='_ProcessPageEditPrev' target='_top' href='$url' title='$title' data-action='this'><i class='fa fa-angle-double-left'></i> $label</a>";
+			$class = $next->id ? ' class="space-right"' : '';
+			$a = "<a id='_ProcessPageEditPrev' target='_top' href='$url' title='$title' data-action='this'{$class}><i class='fa fa-angle-double-left'></i> $label</a>";
 			$pnTabs[$id] = $a;
 		}
 
 		if($this->wire('user')->admin_theme == 'AdminThemeUikit') {
 			$pnTabs = array_reverse($pnTabs);
 		}
-
 
 		$tabs = array_merge($tabs,$pnTabs);
 

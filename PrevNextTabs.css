@@ -30,13 +30,13 @@
  * ===============================
  */
 
-.AdminThemeUikit ul#PageEditTabs li.nextLink {
+.AdminThemeUikit ul#PageEditTabs li.nextLink,
+.AdminThemeUikit ul#PageEditTabs li.prevLink {
   position: absolute;
   right:0;
 }
 
-.AdminThemeUikit ul#PageEditTabs li.prevLink {
-  position: absolute;
+.AdminThemeUikit ul#PageEditTabs li.spaceRight {
   right:80px;
 }
 
