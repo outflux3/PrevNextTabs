@@ -27,7 +27,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		return array(
 			'title'    => 'Prev/Next Tabs',
 			'summary'  => 'Adds prev/next links (tabs) to page editor.',
-			'version'  => '010',
+			'version'  => '011',
 			'author'   => 'Macrura',
 			'autoload' => true
 		);
@@ -305,11 +305,11 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		//--- UiKit Placement Preference ---//
 		$f = wire('modules')->get('InputfieldRadios'); 
 		$f->attr('name', __('uikit_location'));
-		$f->label = __('UiKit Placement'); 
+		$f->label = __('UiKit Placement');
+		if(!isset($data['uikit_location'])) $data['uikit_location'] = 'tabs';
 		$f->description = __('For users who are on the UiKit admin theme, you can have the pagination at the top instead of in the tabs.');
-		$f->addOption('top', __('Top – Right of Breadcrumbs'), ($data['uikit_location']=='top')?array('selected'=>'selected'):null); 
-		$f->addOption('tabs',__('In Page Tabs, Right Side (old skool)'), ($data['uikit_location']=='tabs')?array('selected'=>'selected'):null);
-		//$f->columnWidth = 50;
+		$f->addOption('top', __('Top – Right of Breadcrumbs'), ($data['uikit_location'] == 'top') ? array('selected'=>'selected') : null);
+		$f->addOption('tabs',__('In Page Tabs, Right Side (old skool)'), ($data['uikit_location'] == 'tabs') ? array('selected'=>'selected') : null );
 		$wrapper->add($f);
 
 
@@ -318,9 +318,9 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		$f->attr('name', __('reno_location'));
 		$f->label = __('Reno Placement'); 
 		$f->description = __('For users who are on the Reno admin theme, you can have the pagination at the top instead of in the tabs.');
-		$f->addOption('top', __('Top – Right of Breadcrumbs'), ($data['reno_location']=='top')?array('selected'=>'selected'):null); 
-		$f->addOption('tabs',__('In Page Tabs, Right Side (old skool)'), ($data['reno_location']=='tabs')?array('selected'=>'selected'):null);
-		//$f->columnWidth = 50;
+		if(!isset($data['reno_location'])) $data['reno_location'] = 'tabs';
+		$f->addOption('top', __('Top – Right of Breadcrumbs'), ($data['reno_location'] == 'top') ? array('selected'=>'selected') : null);
+		$f->addOption('tabs',__('In Page Tabs, Right Side (old skool)'), ($data['reno_location'] == 'tabs') ? array('selected'=>'selected') : null);
 		$wrapper->add($f);
 
 
