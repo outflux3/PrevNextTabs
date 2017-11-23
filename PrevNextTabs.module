@@ -27,7 +27,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		return array(
 			'title'    => 'Prev/Next Tabs',
 			'summary'  => 'Adds prev/next links (tabs) to page editor.',
-			'version'  => '011',
+			'version'  => '012',
 			'author'   => 'Macrura',
 			'autoload' => true
 		);
@@ -127,7 +127,8 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	 */
 	public function hookAddPrevNext(HookEvent $event) {
 
-		$query = 'include=all, sort=sort, parent='.$this->editedPage->parent;
+		//$query = 'include=all, sort=sort, parent='.$this->editedPage->parent;
+		$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
 		$next = $this->editedPage->next($query);
 		$prev = $this->editedPage->prev($query);
 
@@ -181,7 +182,8 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	 */
 	public function hookAddPrevNextBC(HookEvent $event) {
 
-		$query = 'include=all, sort=sort, parent='.$this->editedPage->parent;
+		//$query = 'include=all, sort=sort, parent='.$this->editedPage->parent;
+		$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
 		$next = $this->editedPage->next($query);
 		$prev = $this->editedPage->prev($query);
 		$first = $this->editedPage->parent->children('include=all')->first();
@@ -231,7 +233,8 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	 */
 	public function hookAddPrevNextBCReno(HookEvent $event) {
 
-		$query = 'include=all, sort=sort, parent='.$this->editedPage->parent;
+		//$query = 'include=all, sort=sort, parent='.$this->editedPage->parent;
+		$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
 		$next = $this->editedPage->next($query);
 		$prev = $this->editedPage->prev($query);
 		$first = $this->editedPage->parent->children('include=all')->first();

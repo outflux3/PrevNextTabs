@@ -75,3 +75,10 @@
   padding: 5px 10px;
 }
 
+
+body.modal .prev-next-links,
+body.modal #_ProcessPageEditPrev,
+body.modal #_ProcessPageEditNext {
+    display: none;
+}
+
