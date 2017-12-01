@@ -27,7 +27,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		return array(
 			'title'    => 'Prev/Next Tabs',
 			'summary'  => 'Adds prev/next links (tabs) to page editor.',
-			'version'  => '013',
+			'version'  => '014',
 			'author'   => 'Macrura',
 			'autoload' => true
 		);
@@ -81,25 +81,24 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		// don't even consider system templates
 		if($this->editedPage->template->flags & Template::flagSystem) return;
 
+        // if there's only the default admin theme, $user->admin_theme is not available
+        $this->adminTheme = $this->user->admin_theme ? $this->user->admin_theme : $this->config->defaultAdminTheme;
+
 		// hook only if
 		// 1) no templates have been chosen (=all enabled) OR
 		// 2) the template of the edited page has been chosen
 		if(count($this->enabledTemplates) == 0 or
 		   in_array($this->editedPage->template->name, $this->enabledTemplates)) {
 
-			// make config for ui kit to show in normal or in breadcrumbs
-			//$this->addHookAfter('ProcessPageEdit::getTabs', $this, 'hookAddPrevNext');
-
 			$hookTabs = true;
 
-			// other way of testing user theme?
-			if($this->wire('user')->admin_theme == 'AdminThemeUikit' && $this->uikit_location == 'top') {
+			if($this->admin_theme == 'AdminThemeUikit' && $this->uikit_location == 'top') {
 				$hookTabs = false;
 				$this->addAssets();
 				$this->addHookAfter('AdminThemeUikit::renderBreadcrumbs', $this, 'hookAddPrevNextBC');
 			}
 
-			if($this->wire('user')->admin_theme == 'AdminThemeReno' && $this->reno_location == 'top') {
+			if($this->adminTheme == 'AdminThemeReno' && $this->reno_location == 'top') {
 				$hookTabs = false;
 				$this->addAssets();
 				$this->addHookAfter('Page::render', $this, 'hookAddPrevNextBCReno', array('priority'=>1000));
@@ -127,7 +126,6 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	 */
 	public function hookAddPrevNext(HookEvent $event) {
 
-		//$query = 'include=all, sort=sort, parent='.$this->editedPage->parent;
 		$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
 		$next = $this->editedPage->next($query);
 		$prev = $this->editedPage->prev($query);
@@ -182,7 +180,6 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	 */
 	public function hookAddPrevNextBC(HookEvent $event) {
 
-		//$query = 'include=all, sort=sort, parent='.$this->editedPage->parent;
 		$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
 		$next = $this->editedPage->next($query);
 		$prev = $this->editedPage->prev($query);
@@ -233,7 +230,6 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	 */
 	public function hookAddPrevNextBCReno(HookEvent $event) {
 
-		//$query = 'include=all, sort=sort, parent='.$this->editedPage->parent;
 		$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
 		$next = $this->editedPage->next($query);
 		$prev = $this->editedPage->prev($query);
@@ -286,6 +282,11 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	 *
 	 */
 	public static function getModuleConfigInputfields(array $data) {
+
+		// not sure if this is needed...
+		// foreach(self::$configDefaults as $key => $value) {
+		// 	if(!isset($data[$key])||$data[$key]=="") $data[$key] = $value;
+		// }
 
 		$wrapper = new InputfieldWrapper();
 
