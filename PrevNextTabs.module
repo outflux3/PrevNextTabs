@@ -92,7 +92,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 
 			$hookTabs = true;
 
-			if($this->admin_theme == 'AdminThemeUikit' && $this->uikit_location == 'top') {
+			if($this->adminTheme == 'AdminThemeUikit' && $this->uikit_location == 'top') {
 				$hookTabs = false;
 				$this->addAssets();
 				$this->addHookAfter('AdminThemeUikit::renderBreadcrumbs', $this, 'hookAddPrevNextBC');
