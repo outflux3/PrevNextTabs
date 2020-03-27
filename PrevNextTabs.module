@@ -27,7 +27,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		return array(
 			'title'    => 'Prev/Next Tabs',
 			'summary'  => 'Adds prev/next links (tabs) to page editor.',
-			'version'  => '015',
+			'version'  => '016',
 			'author'   => 'Macrura',
 			'autoload' => true
 		);
@@ -36,8 +36,8 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 
 	protected static $configDefaults = array(
 		'enabledTemplates' 	=> [],
-		'uikit_location'  	=> 'tabs',
-		'reno_location'		=> 'tabs',
+		'uikit_location'  	=> 'top',
+		'reno_location'		=> 'top',
 	);
 
 	/**
@@ -59,13 +59,14 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	}
 
 
-
 	/**
 	 * ready() is called when both PW's API is ready and $page object is initialized (for autoload modules!)
 	 * Add the hook here to be able to skip it based on the template of the edited page.
 	 *
 	 */
 	public function ready() {
+
+		$this->ajaxSendData();
 
 		// we're interested in page editor only
 		if(wire('page')->process != 'ProcessPageEdit') return;
@@ -84,11 +85,8 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
         // if there's only the default admin theme, $user->admin_theme is not available
         $this->adminTheme = $this->user->admin_theme ? $this->user->admin_theme : $this->config->defaultAdminTheme;
 
-		// hook only if
-		// 1) no templates have been chosen (=all enabled) OR
-		// 2) the template of the edited page has been chosen
-		if(count($this->enabledTemplates) == 0 or
-		   in_array($this->editedPage->template->name, $this->enabledTemplates)) {
+		// hook only if the template of the edited page has been chosen
+		if(in_array($this->editedPage->template->name, $this->enabledTemplates)) {
 
 			$hookTabs = true;
 
@@ -101,7 +99,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 			if($this->adminTheme == 'AdminThemeReno' && $this->reno_location == 'top') {
 				$hookTabs = false;
 				$this->addAssets();
-				$this->addHookAfter('Page::render', $this, 'hookAddPrevNextBCReno', array('priority'=>1000));
+				$this->addHookAfter('Page::render', $this, 'hookAddPrevNextBC', array('priority'=>1000));
 			}
 
 			if($hookTabs) {
@@ -112,6 +110,38 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 
 	}
 
+	/**
+	 * This method handles the ready() state 
+	 * for ajax calls to get the urls for prev/next etc.
+	 */
+	public function ajaxSendData() {
+
+		if($this->config->ajax && $this->input->get->prevNextTabs != '') {
+
+			$id = $this->input->get->prevNextTabs;
+			$this->editedPage = wire('pages')->get($id);
+
+			$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
+			$next = $this->editedPage->next($query);
+			$prev = $this->editedPage->prev($query);
+			$first = $this->editedPage->parent->children('include=all')->first();
+			$last = $this->editedPage->parent->children('include=all')->last();
+
+			$a = [
+				'next'  	 => $next->id,
+				'nextTitle'  => wire('sanitizer')->unentities($next->title),
+				'prev'		 => $prev->id,
+				'prevTitle'  => wire('sanitizer')->unentities($prev->title),
+				'first' 	 => $first->id,
+				'firstTitle' => wire('sanitizer')->unentities($first->title),
+				'last'  	 => $last->id,
+				'lastTitle'  => wire('sanitizer')->unentities($last->title),
+			];
+			echo json_encode($a);
+            exit;
+        }
+
+	}
 
 	public function addAssets() {
 		$this->config->styles->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".css?v=" . time());
@@ -126,12 +156,6 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 	 */
 	public function hookAddPrevNext(HookEvent $event) {
 
-		$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
-		$next = $this->editedPage->next($query);
-		$prev = $this->editedPage->prev($query);
-
-		if (!$next->id && !$prev->id) return;
-
 		// add styles & init tooltip only if the links are to show
 		$this->config->styles->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".css?v=" . time());
 		$this->config->scripts->add($this->config->urls->siteModules .  __CLASS__ . '/' . __CLASS__ . ".js?v=" . time());
@@ -141,138 +165,68 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 
 		$pnTabs = array();
 
-		if ($next->id) {
-			$label = $this->_('Next');
-			$id = $this->className() . 'Next';
-			$url = $next->editUrl;
-			$title = wire('sanitizer')->entities($next->title);
-			$a = "<a id='_ProcessPageEditNext' target='_top' href='$url' title='$title' data-action='this'>$label <i class='fa fa-angle-double-right'></i></a>";
-			$pnTabs[$id] = $a;
-		}
+		$label = $this->_('Next');
+		$id = $this->className() . 'Next';
+		$a = "<a id='_ProcessPageEditNext' class='' target='_top' href='#' title='Loading...' data-action='this'>$label <i class='fa fa-spinner fa-spin'></i></a>"; 
+		$pnTabs[$id] = $a;
 
-		if ($prev->id) {
-			$label = $this->_('Prev');
-			$id = $this->className() . 'Prev';
-			$url = $prev->editUrl;
-			$title = wire('sanitizer')->entities($prev->title);
-			$class = $next->id ? ' class="space-right"' : '';
-			$a = "<a id='_ProcessPageEditPrev' target='_top' href='$url' title='$title' data-action='this'{$class}><i class='fa fa-angle-double-left'></i> $label</a>";
-			$pnTabs[$id] = $a;
-		}
+		$label = $this->_('Prev');
+		$id = $this->className() . 'Prev';
+		$class = ' class="space-right"';
+		$a = "<a id='_ProcessPageEditPrev' target='_top' href='#' title='Loading...' data-action='this'{$class}><i class='fa fa-spinner fa-spin'></i> $label</a>";
+		$pnTabs[$id] = $a;
 
 		if($this->wire('user')->admin_theme == 'AdminThemeUikit') {
 			$pnTabs = array_reverse($pnTabs);
 		}
 
 		$tabs = array_merge($tabs,$pnTabs);
-
 		$event->return = $tabs;
 
 	}
 
-
 	/**
-	 * Add Prev/Next Links (Pagination) for Ui Kit
-	 * This hooks into the breadcrumbs, sets up a 4/4 grid and places the breadcrumbs in the 
+	 * Add Prev/Next Links (Pagination) for UiKit & Reno
+	 * Uikit: sets up a 4/4 grid and places the breadcrumbs in the 
 	 * left 3/4 and the pagination links in the right 1/4
 	 * @param  HookEvent $event [UiKit Breadcrumbs]
 	 * @return [string]         [Markup for the breadcrumbs and prev/next pagination]
+	 * Note - the spinners get replaced by arrows
+	 * fa-angle-left
+	 * fa-angle-right
 	 */
 	public function hookAddPrevNextBC(HookEvent $event) {
+		
+		$liClassPrev = 'uk-pagination-previous';
+		$liClassNext = 'uk-pagination-next';
 
-		$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
-		$next = $this->editedPage->next($query);
-		$prev = $this->editedPage->prev($query);
-		$first = $this->editedPage->parent->children('include=all')->first();
-		$last = $this->editedPage->parent->children('include=all')->last();
-
-		if (!$next->id && !$prev->id) return;
-
-		$pnLinks = array();
-
-		if ($prev->id) {
-			$label = $this->_('Prev');
-			$url = $prev->editUrl;
-			$title = wire('sanitizer')->entities($prev->title);
-			$a = "<li class='uk-pagination-previous'><a href='$url' title='$title' accesskey='<'><i class='fa fa-angle-left'></i> <span>$label</span></a></li>";
-			$pnLinks[0] = $a;
-		} else {
-			$label = $this->_('Last');
-			$url = $last->editUrl;
-			$title = wire('sanitizer')->entities($last->title);
-			$a = "<li class='uk-pagination-previous'><a href='$url' title='$title' accesskey='<'><i class='fa fa-angle-left'></i> <span>$label</span></a></li>";
-			$pnLinks[0] = $a;
-		}
-
-		if ($next->id) {
-			$label = $this->_('Next');
-			$url = $next->editUrl;
-			$title = wire('sanitizer')->entities($next->title);
-			$a = "<li class='uk-pagination-next'><a href='$url' title='$title' accesskey='>'><span>$label</span> <i class='fa fa-angle-right'></i></a></li>";
-			$pnLinks[1] = $a;
-		} else {
-			$label = $this->_('First');
-			$url = $first->editUrl;
-			$title = wire('sanitizer')->entities($first->title);
-			$a = "<li class='uk-pagination-next'><a href='$url' title='$title' accesskey='>'><span>$label</span> <i class='fa fa-angle-right'></i></a></li>";
-			$pnLinks[1] = $a;
-		}
-
-		$links = '<div class="uk-width-1-4 prev-next-links"><ul class="uk-pagination uk-float-right">' . implode($pnLinks) . '</ul></div>'; //
-		$event->return = '<div class="uk-grid uk-margin-bottom"><div class="uk-width-3-4">' . str_replace('</ul>', '</ul></div>' . $links, $event->return) . '</div>';
-	}
-
-
-	/**
-	 * Add Prev/Next Links (Pagination) for Reno
-	 * @param  HookEvent $event [Page Render]
-	 * @return [string]         [Markup for the breadcrumbs and prev/next pagination]
-	 */
-	public function hookAddPrevNextBCReno(HookEvent $event) {
-
-		$query = 'include=all, sort=' . $this->editedPage->parent->sortfield . ', parent='.$this->editedPage->parent;
-		$next = $this->editedPage->next($query);
-		$prev = $this->editedPage->prev($query);
-		$first = $this->editedPage->parent->children('include=all')->first();
-		$last = $this->editedPage->parent->children('include=all')->last();
-
-		if (!$next->id && !$prev->id) return;
+		if($this->wire('user')->admin_theme == 'AdminThemeReno') {
+			$liClassPrev = 'pagination-previous';
+			$liClassNext = 'pagination-next';
+		}	
 
 		$pnLinks = array();
+		$label 		= $this->_('Prev');
+		$url 		= '#';
+		$title 		= 'Loading...';
+		$a 			= "<li class='$liClassPrev'><a href='$url' title='$title' accesskey='<'><i class='fa fa-spinner fa-spin'></i> <span>$label</span></a></li>";
+		$pnLinks[0] = $a;
 
-		if ($prev->id) {
-			$label = $this->_('Prev');
-			$url = $prev->editUrl;
-			$title = wire('sanitizer')->entities($prev->title);
-			$a = "<li class='pagination-previous'><a href='$url' title='$title' accesskey='<'><i class='fa fa-angle-left'></i> <span>$label</span></a></li>";
-			$pnLinks[0] = $a;
+		$label 		= $this->_('Next');
+		$url 		= '#';
+		$title 		= 'Loading...';
+		$a 			= "<li class='$liClassNext'><a href='$url' title='$title' accesskey='>'><span>$label</span> <i class='fa fa-spinner fa-spin'></i></a></li>";
+		$pnLinks[1] = $a;
+
+		if($this->wire('user')->admin_theme == 'AdminThemeReno') {
+			$links = '<div class="prev-next-links"><ul class="pagination">' . implode($pnLinks) . '</ul></div>'; //
+			$event->return = str_replace('<div id="breadcrumbs">', $links . '<div id="breadcrumbs">',  $event->return);
 		} else {
-			$label = $this->_('Last');
-			$url = $last->editUrl;
-			$title = wire('sanitizer')->entities($last->title);
-			$a = "<li class='pagination-previous'><a href='$url' title='$title' accesskey='<'><i class='fa fa-angle-left'></i> <span>$label</span></a></li>";
-			$pnLinks[0] = $a;
+			$links = '<div class="uk-width-1-4 prev-next-links"><ul class="uk-pagination uk-float-right">' . implode($pnLinks) . '</ul></div>'; //
+			$event->return = '<div class="uk-grid uk-margin-bottom"><div class="uk-width-3-4">' . str_replace('</ul>', '</ul></div>' . $links, $event->return) . '</div>';
 		}
 
-		if ($next->id) {
-			$label = $this->_('Next');
-			$url = $next->editUrl;
-			$title = wire('sanitizer')->entities($next->title);
-			$a = "<li class='pagination-next'><a href='$url' title='$title' accesskey='>'><span>$label</span> <i class='fa fa-angle-right'></i></a></li>";
-			$pnLinks[1] = $a;
-		} else {
-			$label = $this->_('First');
-			$url = $first->editUrl;
-			$title = wire('sanitizer')->entities($first->title);
-			$a = "<li class='pagination-next'><a href='$url' title='$title' accesskey='>'><span>$label</span> <i class='fa fa-angle-right'></i></a></li>";
-			$pnLinks[1] = $a;
-		}
-
-		$links = '<div class="prev-next-links"><ul class="pagination">' . implode($pnLinks) . '</ul></div>'; //
-		$event->return = str_replace('<div id="breadcrumbs">', $links . '<div id="breadcrumbs">',  $event->return);
 	}
-
-
 
 	/**
 	 * Return an InputfieldsWrapper of Inputfields used to configure the class
@@ -293,7 +247,7 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		$fieldEnabledTemplates = wire('modules')->get('InputfieldAsmSelect');
 		$fieldEnabledTemplates->attr('name+id', 'enabledTemplates');
 		$fieldEnabledTemplates->label = __('Enabled templates', __FILE__);
-		$fieldEnabledTemplates->description = __('"Prev/Next" tabs will only be shown for chosen templates. If no template is chosen, Prev/Next tabs will be shown for all templates.', __FILE__);
+		$fieldEnabledTemplates->description = __('"Prev/Next" tabs/links will be shown only for the templates selected.', __FILE__);
 		$fieldEnabledTemplates->attr('title', __('Enable template', __FILE__));
 		$fieldEnabledTemplates->setAsmSelectOption('sortable', false);
 
@@ -310,24 +264,24 @@ class PrevNextTabs extends WireData implements Module, ConfigurableModule {
 		$f = wire('modules')->get('InputfieldRadios'); 
 		$f->attr('name', __('uikit_location'));
 		$f->label = __('UiKit Placement');
-		if(!isset($data['uikit_location'])) $data['uikit_location'] = 'tabs';
-		$f->description = __('For users who are on the UiKit admin theme, you can have the pagination at the top instead of in the tabs.');
+		if(!isset($data['uikit_location'])) $data['uikit_location'] = 'top';
+		$f->description = __('For users who are on the UiKit admin theme, you can have the pagination links at the top.');
 		$f->addOption('top', __('Top – Right of Breadcrumbs'), ($data['uikit_location'] == 'top') ? array('selected'=>'selected') : null);
 		$f->addOption('tabs',__('In Page Tabs, Right Side (old skool)'), ($data['uikit_location'] == 'tabs') ? array('selected'=>'selected') : null );
 		$wrapper->add($f);
-
 
 		//--- Reno Placement Preference ---//
 		$f = wire('modules')->get('InputfieldRadios'); 
 		$f->attr('name', __('reno_location'));
 		$f->label = __('Reno Placement'); 
-		$f->description = __('For users who are on the Reno admin theme, you can have the pagination at the top instead of in the tabs.');
-		if(!isset($data['reno_location'])) $data['reno_location'] = 'tabs';
+		$f->description = __('For users who are on the Reno admin theme, you can have the pagination at the top.');
+		if(!isset($data['reno_location'])) $data['reno_location'] = 'top';
 		$f->addOption('top', __('Top – Right of Breadcrumbs'), ($data['reno_location'] == 'top') ? array('selected'=>'selected') : null);
 		$f->addOption('tabs',__('In Page Tabs, Right Side (old skool)'), ($data['reno_location'] == 'tabs') ? array('selected'=>'selected') : null);
 		$wrapper->add($f);
 
-
 		return $wrapper;
+
 	}
+
 }
