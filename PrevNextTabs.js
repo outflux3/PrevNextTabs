@@ -10,7 +10,7 @@ $(document).ready(function() {
 	var url = '?prevNextTabs='+id;
 	
 	$.get(url, function(response) {
-		console.log(response);
+		//console.log(response);
 		var next = response.next;
 		var prev = response.prev;
 		var first = response.first;
